@@ -24,3 +24,19 @@ unittest
     assert(+A == Plane(1, 2, 3, 4));
     assert(-A == Plane(-1, -2, -3, -4));
 }
+
+@("Plane * Transform3D")
+unittest
+{
+    Plane P = Plane(Vector3(1, 1, 1), Vector3(0, 0, 0));
+    P.normalize();
+
+    // not superb example, but well
+    Transform3D TR = Transform3D.IDENTITY;
+    P = P * TR;
+
+    Plane Q = TR * P;
+
+    Vector3 Naxis = Vector3(1 / gm_sqrt(3.0), 1 / gm_sqrt(3.0), 1 / gm_sqrt(3.0));
+    assert(P.is_equal_approx(Plane(Naxis, Vector3(0, 0, 0))));
+}

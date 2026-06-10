@@ -2494,8 +2494,9 @@ pure nothrow @nogc @safe:
         alias V3 = Vector3Impl!T;
         alias Elem = T;     
         alias P = PlaneImpl!T;
+        alias T3D = Transform3DImpl!T;
     }
-     
+
     union
     {
         V3 normal;
@@ -2506,7 +2507,7 @@ pure nothrow @nogc @safe:
             T z;
         }
     }
-	T d = 0;
+    T d = 0;
 
     this(T a, T b, T c, T d)
     {
@@ -3942,6 +3943,8 @@ pure nothrow @nogc @safe:
         return this;
     }
     V3 opBinary(string op)(const V3 v) const if (op == "*") => xform(v);
+    PL opBinary(string op)(const PL plane) const if (op == "*") => xform(plane);
+
     AABBImpl!T opBinary(string op)(const AABBImpl!T aabb) const if (op == "*") => xform(aabb);
     T3D opBinary(string op)(const T fact) const if (op == "*")
     {
