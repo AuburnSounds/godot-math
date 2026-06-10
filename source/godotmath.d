@@ -2608,8 +2608,8 @@ pure nothrow @nogc @safe:
 
     // operators
     inout(T)* ptr() inout return => normal.ptr;
-    P opBinary(string op)(const P plane) const if (op == "+") => this;
-    P opBinary(string op)(const P plane) const if (op == "-") => P(-normal, -d);
+    P opUnary(string op)() const if (op == "+") => this;
+    P opUnary(string op)() const if (op == "-") => P(-normal, -d);
     P opBinary(string op)(const T3D transform) const if (op == "*") => transform.affine_inverse() * this;
 }
  
