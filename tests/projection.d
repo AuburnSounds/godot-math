@@ -51,4 +51,9 @@ unittest
     Vector4 expected = Vector4(67, 44, 56, 54);
     
     assert((B * v) == expected);
+
+    // Test double instance
+    Projectiond Ad = Projectiond.IDENTITY;
+    Vector4d vd = Vector4d(1, 2, 3, 4);    
+    assert((Ad * vd) == vd);
 }

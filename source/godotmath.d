@@ -4007,7 +4007,7 @@ pure nothrow @nogc @safe:
         this.w = w;
     }
 
-    this(Transform3D tr)
+    this(T3D tr)
     {
         m[0] = tr.basis.rows[0][0];
         m[1] = tr.basis.rows[1][0];
