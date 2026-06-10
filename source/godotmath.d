@@ -917,9 +917,7 @@ pure nothrow @nogc @safe:
         => V( x > other.x ? x : other.x, y > other.y ? y : other.y, z > other.z ? z : other.z );
     int max_axis_index() const
     {
-        if (x > y && x > z) return AXIS_X;
-        if (y > z) return AXIS_Y;
-        return AXIS_Z;
+        return x < y ? (y < z ? AXIS_Z : AXIS_Y) : (x < z ? AXIS_Z : AXIS_X);
     }
     V max(T v) const 
         => V( x > v ? x : v, y > v ? y : v, z > v ? z : v );
@@ -927,9 +925,7 @@ pure nothrow @nogc @safe:
         => V( x < other.x ? x : other.x, y < other.y ? y : other.y, z < other.z ? z : other.z );
     int min_axis_index() const
     {
-        if (x < y && x < z) return AXIS_X;
-        if (y < z) return AXIS_Y;
-        return AXIS_Z;
+        return x < y ? (x < z ? AXIS_X : AXIS_Z) : (y < z ? AXIS_Y : AXIS_Z);
     }
     V min(T v) const 
         => V( x < v ? x : v, y < v ? y : v, z < v ? z : v );
@@ -1289,10 +1285,17 @@ pure nothrow @nogc @safe:
         => V( x > other.x ? x : other.x, y > other.y ? y : other.y, z > other.z ? z : other.z, w > other.w ? w : other.w );
     int max_axis_index() const
     {
-        if (x > y && x > z && x > w) return AXIS_X;
-        if (y > z && y > w) return AXIS_Y;
-        if (z > w) return AXIS_Z;
-        return AXIS_W;
+        int max_index = 0;
+        T max_value = x;
+        for (int i = 1; i < 4; i++)
+        {
+            if (array[i] > max_value)
+            {
+                max_index = i;
+                max_value = array[i];
+            }
+        }
+        return AXIS_X + max_index;
     }
     V max(T v) const 
         => V( x > v ? x : v, y > v ? y : v, z > v ? z : v, w > v ? w : v );
@@ -1300,10 +1303,17 @@ pure nothrow @nogc @safe:
         => V( x < other.x ? x : other.x, y < other.y ? y : other.y, z < other.z ? z : other.z, w < other.w ? w : other.w );
     int min_axis_index() const
     {
-        if (x < y && x < z && x < w) return AXIS_X;
-        if (y < z && y < w) return AXIS_Y;
-        if (z < w) return AXIS_Z;
-        return AXIS_W;
+        int max_index = 0;
+        T max_value = x;
+        for (int i = 1; i < 4; i++)
+        {
+            if (array[i] <= max_value)
+            {
+                max_index = i;
+                max_value = array[i];
+            }
+        }
+        return AXIS_X + max_index;
     }
     V min(T v) const 
         => V( x < v ? x : v, y < v ? y : v, z < v ? z : v, w < v ? w : v );
@@ -2787,8 +2797,8 @@ pure nothrow @nogc @safe:
 
     inout(T)* ptr() inout return => columns[0].ptr;
 
-    T2D rotated(float angle) const => T2D(angle, V2.ZERO) * this; /// Equivalent to left multiplication
-    T2D rotated_local(float angle) const => this * T2D(angle, V2.ZERO); /// Equivalent to right multiplication
+    T2D rotated(T angle) const => T2D(angle, V2.ZERO) * this; /// Equivalent to left multiplication
+    T2D rotated_local(T angle) const => this * T2D(angle, V2.ZERO); /// Equivalent to right multiplication
 
     private void set_rotation(T rotation) 
     {
@@ -3715,7 +3725,6 @@ pure nothrow @nogc @safe:
 
     this(ProjectionImpl!T projection) // Note: is an implicit conversion in Godot
     {
-        Transform3D tr;
         basis.rows[0][0] = projection.m[0];
         basis.rows[1][0] = projection.m[1];
         basis.rows[2][0] = projection.m[2];
