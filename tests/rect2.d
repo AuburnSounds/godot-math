@@ -145,6 +145,7 @@ unittest
     Rect2i B = Rect2i(2, 2, 4, 4);
     Rect2i C = Rect2i(0, 0, 2, 2);
     assert(A == A.merge(A));
+    assert(A.merge(B) == Rect2i(0, 0, 6, 6));
     assert(!A.encloses(B));
     assert(A.encloses(C));
     assert(Rect2i(260, 100, 100, 100).intersection(Rect2i(100, 100, 100, 100)).has_no_area());

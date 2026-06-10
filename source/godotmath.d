@@ -1616,7 +1616,7 @@ pure nothrow @nogc @safe:
         R r;
         r.p = rect.p.min(p);
         r.size = (rect.p + rect.size).max(position + size);
-        r.size = rect.size - rect.p;
+        r.size = r.size - r.p; // Make relative again.
         return r;
     }
 
