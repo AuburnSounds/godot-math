@@ -32,6 +32,15 @@ unittest
     assert(V.is_equal_approx(Vector3(3, 1, 2)));
 }
 
+@("Quaternion * scalar")
+unittest
+{
+    const Quaterniond Q = Quaterniond(1, 2, 3, 4);    
+    double scalar = 2;
+    Quaterniond Q2 = Q * scalar;
+    assert(Q2.is_equal_approx(Quaterniond(2, 4, 6, 8)));
+}
+
 @("Vector3 * Quaternion")
 unittest
 {

@@ -2431,7 +2431,7 @@ pure nothrow @nogc @safe:
         return r;
     }
     V3 opBinary(string op)(const V3 v) const if (op == "*") => xform(v);
-    Q opBinary(string op)(T s) if (op == "*")             => Q(x * s, y * s, z * s, w * s);
+    Q opBinary(string op)(T s) const if (op == "*")       => Q(x * s, y * s, z * s, w * s);
     Q opBinary(string op)(const Q v) const if (op == "+") => Q(x + v.x  , y + v.y  , z + v.z  , w + v.w  );
     Q opBinary(string op)(const Q v) const if (op == "-") => Q(x - v.x  , y - v.y  , z - v.z  , w - v.w  );
     Q opBinary(string op)(T s) const if (op == "/")       => Q(x / s, y / s, z / s, w / s);
@@ -3783,7 +3783,7 @@ pure nothrow @nogc @safe:
     bool is_finite() const => basis.is_finite() && origin.is_finite();
     bool is_identity_approx() const => is_equal_approx(IDENTITY); // #BONUS
     
-    T3D looking_at(V3 target, V3 up = V3(0, 1, 0), bool use_model_front) const
+    T3D looking_at(V3 target, V3 up = V3(0, 1, 0), bool use_model_front = false) const
     {
         assert(!origin.is_equal_approx(target));
         T3D t = this;
