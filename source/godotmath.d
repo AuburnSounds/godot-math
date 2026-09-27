@@ -64,6 +64,7 @@ alias Quaterniond = QuaternionImpl!double;   ///
 
 // 2x3 matrix (column-major)
 alias Transform2D  = Transform2DImpl!float;  ///
+alias Transform2Di = Transform2DImpl!int;    /// #BONUS
 alias Transform2Dd = Transform2DImpl!double; ///
 
 // 3x3 matrix (row-major)
@@ -582,9 +583,10 @@ pure nothrow @nogc @safe:
     T distance_squared_to(const V v) const => (x - v.x) * (x - v.x) + (y - v.y) * (y - v.y);
     F distance_to(const V v) const => gm_sqrt(cast(F) distance_squared_to(v));
 
+    T dot(const V other) const => x * other.x + y * other.y;
+
     static if (isFloat)
     {
-        T dot(const V other) const => x * other.x + y * other.y;
         V floor() => V(gm_floor(x), gm_floor(y));
         static V from_angle(T angle) => V( gm_cos(angle), gm_sin(angle) );
         bool is_equal_approx(const V other) const => gm_is_equal_approx(x, other.x) && gm_is_equal_approx(y, other.y);
@@ -874,9 +876,10 @@ pure nothrow @nogc @safe:
         => (x - v.x) * (x - v.x) + (y - v.y) * (y - v.y) + (z - v.z) * (z - v.z);
     F distance_to(const V v) const => gm_sqrt(cast(F) distance_squared_to(v));
 
+    T dot(const V other) const => x * other.x + y * other.y + z * other.z;
+
     static if (isFloat)
     {
-        T dot(const V other) const => x * other.x + y * other.y + z * other.z;
         V floor() const => V(gm_floor(x), gm_floor(y), gm_floor(z));
         V get_any_perpendicular()
         {
@@ -1247,9 +1250,10 @@ pure nothrow @nogc @safe:
         => (x - v.x) * (x - v.x) + (y - v.y) * (y - v.y) + (z - v.z) * (z - v.z) + (w - v.w) * (w - v.w);
     F distance_to(const V v) const => gm_sqrt(cast(F) distance_squared_to(v));
 
+    T dot(const V other) const => x * other.x + y * other.y + z * other.z + w * other.w;
+
     static if (isFloat)
     {
-        T dot(const V other) const => x * other.x + y * other.y + z * other.z + w * other.w;
         V floor() const => V(gm_floor(x), gm_floor(y), gm_floor(z), gm_floor(w));
         V inverse() const => V(1 / x, 1 / y, 1 / z, 1 / w);
         bool is_equal_approx(const V other) const
@@ -2479,8 +2483,8 @@ pure nothrow @nogc @safe:
 /*
     ██████╗ ██╗      █████╗ ███╗   ██╗███████╗
     ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝
-    ██████╔╝██║     ███████║██╔██╗ ██║█████╗  
-    ██╔═══╝ ██║     ██╔══██║██║╚██╗██║██╔══╝  
+    ██████╔╝██║     ███████║██╔██╗ ██║█████╗
+    ██╔═══╝ ██║     ██╔══██║██║╚██╗██║██╔══╝
     ██║     ███████╗██║  ██║██║ ╚████║███████╗
     ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝
 */
@@ -2613,7 +2617,7 @@ pure nothrow @nogc @safe:
     P opUnary(string op)() const if (op == "-") => P(-normal, -d);
     P opBinary(string op)(const T3D transform) const if (op == "*") => transform.affine_inverse() * this;
 }
- 
+
 
 
 
@@ -2632,7 +2636,7 @@ pure nothrow @nogc @safe:
        ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═════╝ 
 */
 struct Transform2DImpl(T)
-    if (is(T == float) || is(T == double))
+    if (is(T == int) || is(T == float) || is(T == double))
 {
 pure nothrow @nogc @safe:
 
@@ -2642,6 +2646,7 @@ pure nothrow @nogc @safe:
         alias R = Rect2Impl!T;
         alias Elem = T;
         alias T2D = Transform2DImpl!T;
+        enum bool isFloat = is(T == float) || is(T == double);
     }
 
     union
@@ -2665,24 +2670,27 @@ pure nothrow @nogc @safe:
     enum T2D FLIP_X   = T2D(V2(-1, 0), V2(0,  1), V2(0, 0));
     enum T2D FLIP_Y   = T2D(V2( 1, 0), V2(0, -1), V2(0, 0));
 
-    this(T rotation, V2 position)
+    static if (isFloat)
     {
-        T cr = gm_cos(rotation);
-        T sr = gm_sin(rotation);
-        columns[0][0] = cr;
-        columns[0][1] = sr;
-        columns[1][0] = -sr;
-        columns[1][1] = cr;
-        columns[2] = position;
-    }
+        this(T rotation, V2 position)
+        {
+            T cr = gm_cos(rotation);
+            T sr = gm_sin(rotation);
+            columns[0][0] = cr;
+            columns[0][1] = sr;
+            columns[1][0] = -sr;
+            columns[1][1] = cr;
+            columns[2] = position;
+        }
 
-    this(T rotation, const V2 scale, T skew, const V2 position)
-    {
-        columns[0][0] = gm_cos(rotation) * scale.x;
-        columns[1][1] = gm_cos(rotation + skew) * scale.y;
-        columns[1][0] = -gm_sin(rotation + skew) * scale.y;
-        columns[0][1] = gm_sin(rotation) * scale.x;
-        columns[2] = position;
+        this(T rotation, const V2 scale, T skew, const V2 position)
+        {
+            columns[0][0] = gm_cos(rotation) * scale.x;
+            columns[1][1] = gm_cos(rotation + skew) * scale.y;
+            columns[1][0] = -gm_sin(rotation + skew) * scale.y;
+            columns[0][1] = gm_sin(rotation) * scale.x;
+            columns[2] = position;
+        }
     }
 
     this(V2 xAxis, V2 yAxis, V2 originPos)
@@ -2692,26 +2700,29 @@ pure nothrow @nogc @safe:
         origin = originPos;
     }
 
-    private void affine_invert()
+    static if (isFloat)
     {
-        T det = determinant();
-        assert(det != 0);
-        T idet = 1.0f / det;
+        private void affine_invert()
+        {
+            T det = determinant();
+            assert(det != 0);
+            T idet = 1.0f / det;
 
-        T c00 = columns[0][0];
-        columns[0][0] = columns[1][1];
-        columns[1][1] = c00;
-        
-        columns[0] *= V2(idet, -idet);
-        columns[1] *= V2(-idet, idet);
-        columns[2] = basis_xform(-columns[2]);
-    }
+            T c00 = columns[0][0];
+            columns[0][0] = columns[1][1];
+            columns[1][1] = c00;
 
-    T2D affine_inverse() const
-    {
-        T2D r = this;
-        r.affine_invert();
-        return r;
+            columns[0] *= V2(idet, -idet);
+            columns[1] *= V2(-idet, idet);
+            columns[2] = basis_xform(-columns[2]);
+        }
+
+        T2D affine_inverse() const
+        {
+            T2D r = this;
+            r.affine_invert();
+            return r;
+        }
     }
 
     V2 basis_xform(V2 v) const => V2(tdotx(v), tdoty(v));
@@ -2721,26 +2732,29 @@ pure nothrow @nogc @safe:
     private T tdotx(const V2 v) const => x.x * v.x + y.x * v.y;
     private T tdoty(const V2 v) const => x.y * v.x + y.y * v.y;
     V2 get_origin() const => origin;
-    T get_rotation() const => gm_atan2(x.y, x.x); 
-    V2 get_scale() const
+    static if (isFloat)
     {
-        T det_sign = gm_sign(determinant());
-        return V2(x.length(), det_sign * y.length());
-    }
-    T get_skew() const => gm_acos(x.normalized().dot(gm_sign(determinant()) * y.normalized())) - cast(T)GM_PI * 0.5f;
+        T get_rotation() const => gm_atan2(x.y, x.x); 
+        V2 get_scale() const
+        {
+            T det_sign = gm_sign(determinant());
+            return V2(x.length(), det_sign * y.length());
+        }
+        T get_skew() const => gm_acos(x.normalized().dot(gm_sign(determinant()) * y.normalized())) - cast(T)GM_PI * 0.5f;
 
-    T2D interpolate_with(T2D xform, T weight) const
-    {
-        return T2D(gm_lerp_angle(get_rotation(), xform.get_rotation(), weight),
-                   get_scale().lerp(xform.get_scale(), weight),
-                   gm_lerp_angle(get_skew(), xform.get_skew(), weight),
-                   get_origin().lerp(xform.get_origin(), weight));
+        T2D interpolate_with(T2D xform, T weight) const
+        {
+            return T2D(gm_lerp_angle(get_rotation(), xform.get_rotation(), weight),
+                       get_scale().lerp(xform.get_scale(), weight),
+                       gm_lerp_angle(get_skew(), xform.get_skew(), weight),
+                       get_origin().lerp(xform.get_origin(), weight));
+        }
     }
 
     private void invert()
     {
-        // FIXME: this function assumes the basis is a rotation matrix, with no scaling.
-        // Transform2D::affine_inverse can handle matrices with scaling, so GDScript should eventually use that.
+        // This function assumes the basis is a rotation matrix, with no scaling.
+        // It should also work for integer matrices that are rotations/mirrors.
         T tmp = x.y;
         x.y = y.x;
         y.x = tmp;
@@ -2754,71 +2768,77 @@ pure nothrow @nogc @safe:
         return r;
     }
 
-    bool is_conformal() const
+    static if (isFloat)
     {
-        if (gm_is_equal_approx(x.x, y.y) && gm_is_equal_approx(x.y, -y.x))
-            return true;
+        bool is_conformal() const
+        {
+            if (gm_is_equal_approx(x.x, y.y) && gm_is_equal_approx(x.y, -y.x))
+                return true;
 
-        if (gm_is_equal_approx(x.x, -y.y) && gm_is_equal_approx(x.y, y.x))
-            return true;
+            if (gm_is_equal_approx(x.x, -y.y) && gm_is_equal_approx(x.y, y.x))
+                return true;
 
-        return false;
-    }
+            return false;
+        }
 
-    bool is_equal_approx(const T2D transform) const 
-        => x.is_equal_approx(transform.x) && y.is_equal_approx(transform.y) && origin.is_equal_approx(transform.origin);
+        bool is_equal_approx(const T2D transform) const 
+            => x.is_equal_approx(transform.x) && y.is_equal_approx(transform.y) && origin.is_equal_approx(transform.origin);
 
-    bool is_finite() const
-        => x.is_finite() && y.is_finite() && origin.is_finite();
+        bool is_finite() const
+            => x.is_finite() && y.is_finite() && origin.is_finite();
 
-    bool is_identity_approx() const => is_equal_approx(IDENTITY); // #BONUS
+        bool is_identity_approx() const => is_equal_approx(IDENTITY); // #BONUS
 
-    T2D looking_at(V2 target) const
-    {
-        T2D r = T2D(get_rotation(), get_origin());
-        V2 tpos = affine_inverse().xform(target);
-        r.set_rotation(r.get_rotation() + (tpos * get_scale()).angle());
-        return r;
-    }
+        T2D looking_at(V2 target) const
+        {
+            T2D r = T2D(get_rotation(), get_origin());
+            V2 tpos = affine_inverse().xform(target);
+            r.set_rotation(r.get_rotation() + (tpos * get_scale()).angle());
+            return r;
+        }
 
-    private void orthonormalize()
-    {
-        // Gram-Schmidt Process
-        x.normalize();
-        y = y - x * x.dot(y);
-        y.normalize();
-    }
+        private void orthonormalize()
+        {
+            // Gram-Schmidt Process
+            x.normalize();
+            y = y - x * x.dot(y);
+            y.normalize();
+        }
 
-    T2D orthonormalized() const
-    {
-        T2D r = this;
-        r.orthonormalize();
-        return r;
+        T2D orthonormalized() const
+        {
+            T2D r = this;
+            r.orthonormalize();
+            return r;
+        }
     }
 
     inout(T)* ptr() inout return => columns[0].ptr;
 
-    T2D rotated(T angle) const => T2D(angle, V2.ZERO) * this; /// Equivalent to left multiplication
-    T2D rotated_local(T angle) const => this * T2D(angle, V2.ZERO); /// Equivalent to right multiplication
-
-    private void set_rotation(T rotation) 
+    static if (isFloat)
     {
-        V2 scale = get_scale();
-        T cr = gm_cos(rotation);
-        T sr = gm_sin(rotation);
-        columns[0][0] = cr;
-        columns[0][1] = sr;
-        columns[1][0] = -sr;
-        columns[1][1] = cr;
-        set_scale(scale);
-    }
+        T2D rotated(T angle) const => T2D(angle, V2.ZERO) * this; /// Equivalent to left multiplication
+        T2D rotated_local(T angle) const => this * T2D(angle, V2.ZERO); /// Equivalent to right multiplication
 
-    private void set_scale(const V2 scale) 
-    {
-        columns[0].normalize();
-        columns[1].normalize();
-        columns[0] *= scale.x;
-        columns[1] *= scale.y;
+        private void set_rotation(T rotation) 
+        {
+            V2 scale = get_scale();
+            T cr = gm_cos(rotation);
+            T sr = gm_sin(rotation);
+            columns[0][0] = cr;
+            columns[0][1] = sr;
+            columns[1][0] = -sr;
+            columns[1][1] = cr;
+            set_scale(scale);
+        }
+
+        private void set_scale(const V2 scale) 
+        {
+            columns[0].normalize();
+            columns[1].normalize();
+            columns[0] *= scale.x;
+            columns[1] *= scale.y;
+        }
     }
     
     private void scale(const V2 v)
@@ -2880,6 +2900,11 @@ pure nothrow @nogc @safe:
         else static if (is(U.Elem == double))
         {
             alias VD = Vector2Impl!double;
+            return U(cast(VD)x, cast(VD)y, cast(VD)origin);
+        }
+        else static if (is(U.Elem == int))
+        {
+            alias VD = Vector2Impl!int;
             return U(cast(VD)x, cast(VD)y, cast(VD)origin);
         }
         else

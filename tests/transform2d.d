@@ -37,3 +37,20 @@ unittest
     // Interpolated origin should be halfway
     assert(interpolated.get_origin().is_equal_approx(Vector2(5, 5)));
 }
+
+@("integer transforms")
+unittest
+{
+    Transform2Di tr = Transform2Di(Vector2i(0, -1),
+                                   Vector2i(1, 0),
+                                   Vector2i(10, 20));
+    Vector2i pt = Vector2i(1, 2);
+    Vector2i t  = tr * pt;
+    assert(t.x ==  0 + 2 + 10);
+    assert(t.y == -1 + 0 + 20);
+
+    Transform2Di itr = tr.inverse();
+
+    Vector2i t2  = itr * t;
+    assert(t2 == Vector2i(1, 2));
+}
