@@ -4267,30 +4267,19 @@ pure nothrow @nogc @safe:
         return cm;
     }
 
-    
-
-    // PRECISION: this need to work out instead of the GFM replacement.
-    /+
     void invert() @trusted
     {
         // Adapted from Mesa's `src/util/u_math.c` `util_invert_mat4x4`.
         // MIT licensed. Copyright 2008 VMware, Inc. Authored by Jacques Leroy.
         P temp;
 
-        T[8][4] wtmp;
-        T m0, m1, m2, m3, s;
+        double[8][4] wtmp;
+        double m0, m1, m2, m3, s;
 
-        T* r0 = wtmp[0].ptr;
-        T* r1 = wtmp[1].ptr;
-        T* r2 = wtmp[2].ptr;
-        T* r3 = wtmp[3].ptr;
-
-        static void SWAP(T* a, T* b)
-        {
-            T* c = a;
-            a = b;
-            b = c;
-        }
+        double* r0 = wtmp[0].ptr;
+        double* r1 = wtmp[1].ptr;
+        double* r2 = wtmp[2].ptr;
+        double* r3 = wtmp[3].ptr;
 
         for (int n = 0; n < 4; ++n)
         {
@@ -4298,16 +4287,16 @@ pure nothrow @nogc @safe:
             wtmp[n][1] = m[n + 4 * 1];
             wtmp[n][2] = m[n + 4 * 2];
             wtmp[n][3] = m[n + 4 * 3];
-            wtmp[n][4] = 1;
-            wtmp[n][5] = 0;
-            wtmp[n][6] = 0;
-            wtmp[n][7] = 0;
+            wtmp[n][4] = (n == 0) ? 1 : 0;
+            wtmp[n][5] = (n == 1) ? 1 : 0;
+            wtmp[n][6] = (n == 2) ? 1 : 0;
+            wtmp[n][7] = (n == 3) ? 1 : 0;
         }
 
         /* choose pivot - or die */
-        if (gm_abs(r3[0]) > gm_abs(r2[0])) SWAP(r3, r2);
-        if (gm_abs(r2[0]) > gm_abs(r1[0])) SWAP(r2, r1);
-        if (gm_abs(r1[0]) > gm_abs(r0[0])) SWAP(r1, r0);
+        if (gm_abs(r3[0]) > gm_abs(r2[0])) gm_swap(r3, r2);
+        if (gm_abs(r2[0]) > gm_abs(r1[0])) gm_swap(r2, r1);
+        if (gm_abs(r1[0]) > gm_abs(r0[0])) gm_swap(r1, r0);
         assert(r0[0] != 0);
 
         /* eliminate first variable     */
@@ -4356,8 +4345,8 @@ pure nothrow @nogc @safe:
         }
 
         /* choose pivot - or die */
-        if (gm_abs(r3[1]) > gm_abs(r2[1])) SWAP(r3, r2);
-        if (gm_abs(r2[1]) > gm_abs(r1[1])) SWAP(r2, r1);
+        if (gm_abs(r3[1]) > gm_abs(r2[1])) gm_swap(r3, r2);
+        if (gm_abs(r2[1]) > gm_abs(r1[1])) gm_swap(r2, r1);
         assert(r1[1] != 0);
           
         /* eliminate second variable */
@@ -4393,7 +4382,7 @@ pure nothrow @nogc @safe:
         }
 
         /* choose pivot - or die */
-        if (gm_abs(r3[2]) > gm_abs(r2[2])) SWAP(r3, r2);
+        if (gm_abs(r3[2]) > gm_abs(r2[2])) gm_swap(r3, r2);
         assert(r2[2] != 0);
 
         /* eliminate third variable */
@@ -4433,8 +4422,8 @@ pure nothrow @nogc @safe:
         m1 = r1[2]; /* now back substitute row 1 */
         s = 1.0 / r1[1];
         r1[4] = s * (r1[4] - r2[4] * m1);
-        r1[5] = s * (r1[5] - r2[5] * m1),
-            r1[6] = s * (r1[6] - r2[6] * m1);
+        r1[5] = s * (r1[5] - r2[5] * m1);
+        r1[6] = s * (r1[6] - r2[6] * m1);
         r1[7] = s * (r1[7] - r2[7] * m1);
         m0 = r0[2];
         r0[4] -= r2[4] * m0;
@@ -4467,77 +4456,6 @@ pure nothrow @nogc @safe:
         temp.m[3 + 4 * 3] = r3[7];
 
         this = temp;
-    }
-    +/
-
-    // took from dplug:math
-    void invert() @trusted
-    {
-        T det2_01_01 = C[0][0] * C[1][1] - C[0][1] * C[1][0];
-        T det2_01_02 = C[0][0] * C[1][2] - C[0][2] * C[1][0];
-        T det2_01_03 = C[0][0] * C[1][3] - C[0][3] * C[1][0];
-        T det2_01_12 = C[0][1] * C[1][2] - C[0][2] * C[1][1];
-        T det2_01_13 = C[0][1] * C[1][3] - C[0][3] * C[1][1];
-        T det2_01_23 = C[0][2] * C[1][3] - C[0][3] * C[1][2];
-
-        T det3_201_012 = C[2][0] * det2_01_12 - C[2][1] * det2_01_02 + C[2][2] * det2_01_01;
-        T det3_201_013 = C[2][0] * det2_01_13 - C[2][1] * det2_01_03 + C[2][3] * det2_01_01;
-        T det3_201_023 = C[2][0] * det2_01_23 - C[2][2] * det2_01_03 + C[2][3] * det2_01_02;
-        T det3_201_123 = C[2][1] * det2_01_23 - C[2][2] * det2_01_13 + C[2][3] * det2_01_12;
-
-        T det = - det3_201_123 * C[3][0] + det3_201_023 * C[3][1] - det3_201_013 * C[3][2] + det3_201_012 * C[3][3];
-        assert(det != 0); // Programming error if matrix is not invertible.
-        T invDet = 1 / det;
-
-        T det2_03_01 = C[0][0] * C[3][1] - C[0][1] * C[3][0];
-        T det2_03_02 = C[0][0] * C[3][2] - C[0][2] * C[3][0];
-        T det2_03_03 = C[0][0] * C[3][3] - C[0][3] * C[3][0];
-        T det2_03_12 = C[0][1] * C[3][2] - C[0][2] * C[3][1];
-        T det2_03_13 = C[0][1] * C[3][3] - C[0][3] * C[3][1];
-        T det2_03_23 = C[0][2] * C[3][3] - C[0][3] * C[3][2];
-        T det2_13_01 = C[1][0] * C[3][1] - C[1][1] * C[3][0];
-        T det2_13_02 = C[1][0] * C[3][2] - C[1][2] * C[3][0];
-        T det2_13_03 = C[1][0] * C[3][3] - C[1][3] * C[3][0];
-        T det2_13_12 = C[1][1] * C[3][2] - C[1][2] * C[3][1];
-        T det2_13_13 = C[1][1] * C[3][3] - C[1][3] * C[3][1];
-        T det2_13_23 = C[1][2] * C[3][3] - C[1][3] * C[3][2];
-
-        T det3_203_012 = C[2][0] * det2_03_12 - C[2][1] * det2_03_02 + C[2][2] * det2_03_01;
-        T det3_203_013 = C[2][0] * det2_03_13 - C[2][1] * det2_03_03 + C[2][3] * det2_03_01;
-        T det3_203_023 = C[2][0] * det2_03_23 - C[2][2] * det2_03_03 + C[2][3] * det2_03_02;
-        T det3_203_123 = C[2][1] * det2_03_23 - C[2][2] * det2_03_13 + C[2][3] * det2_03_12;
-
-        T det3_213_012 = C[2][0] * det2_13_12 - C[2][1] * det2_13_02 + C[2][2] * det2_13_01;
-        T det3_213_013 = C[2][0] * det2_13_13 - C[2][1] * det2_13_03 + C[2][3] * det2_13_01;
-        T det3_213_023 = C[2][0] * det2_13_23 - C[2][2] * det2_13_03 + C[2][3] * det2_13_02;
-        T det3_213_123 = C[2][1] * det2_13_23 - C[2][2] * det2_13_13 + C[2][3] * det2_13_12;
-
-        T det3_301_012 = C[3][0] * det2_01_12 - C[3][1] * det2_01_02 + C[3][2] * det2_01_01;
-        T det3_301_013 = C[3][0] * det2_01_13 - C[3][1] * det2_01_03 + C[3][3] * det2_01_01;
-        T det3_301_023 = C[3][0] * det2_01_23 - C[3][2] * det2_01_03 + C[3][3] * det2_01_02;
-        T det3_301_123 = C[3][1] * det2_01_23 - C[3][2] * det2_01_13 + C[3][3] * det2_01_12;
-
-        P res = void;
-        res.C[0][0] = - det3_213_123 * invDet;
-        res.C[1][0] = + det3_213_023 * invDet;
-        res.C[2][0] = - det3_213_013 * invDet;
-        res.C[3][0] = + det3_213_012 * invDet;
-
-        res.C[0][1] = + det3_203_123 * invDet;
-        res.C[1][1] = - det3_203_023 * invDet;
-        res.C[2][1] = + det3_203_013 * invDet;
-        res.C[3][1] = - det3_203_012 * invDet;
-
-        res.C[0][2] = + det3_301_123 * invDet;
-        res.C[1][2] = - det3_301_023 * invDet;
-        res.C[2][2] = + det3_301_013 * invDet;
-        res.C[3][2] = - det3_301_012 * invDet;
-
-        res.C[0][3] = - det3_201_123 * invDet;
-        res.C[1][3] = + det3_201_023 * invDet;
-        res.C[2][3] = - det3_201_013 * invDet;
-        res.C[3][3] = + det3_201_012 * invDet;
-        this = res;
     }
 
     bool is_equal_approx(const P other) const
