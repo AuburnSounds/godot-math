@@ -1078,6 +1078,8 @@ pure nothrow @nogc @safe:
     V withY(T newY) const => V(x, newY, z);
     V withZ(T newZ) const => V(x, y, newZ);
 
+    V2 xy() const => V2(x, y); // #BONUS
+
     // operators
     ref inout(T) opIndex(size_t n) inout return => array[n];
     size_t opDollar() => 3;
@@ -1358,6 +1360,8 @@ pure nothrow @nogc @safe:
     V withY(T newY) const => V(x, newY, z, w);
     V withZ(T newZ) const => V(x, y, newZ, w);
     V withW(T newW) const => V(x, y, z, newW);
+
+    V3 xyz() const => V3(x, y, z); // #BONUS
  
     // operators
     ref inout(T) opIndex(size_t n) inout return => array[n];

@@ -48,6 +48,9 @@ unittest
     assert(Vector4(2, 1, 1, 1) > Vector4(2, 1, 1, 0));
     assert(Vector4(2, 1, 0, 0) > Vector4(1, 4, 8, 0));
     assert(Vector4d(1, 2, 4, 0) <= Vector4d(1, 2, 5, 0));
+
+    assert(Vector3d(1, 2, 4).xy == Vector2d(1, 2));
+    assert(Vector4i(2, 1, 0, 33).xyz == Vector3i(2, 1, 0));
 } 
 
     
