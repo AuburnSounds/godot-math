@@ -150,4 +150,3 @@ float gm_trunc(float x);
 
 - `Rect2`/`Rect2i`/`Rect2d` have a `.merge_non_empty` method that, in case of a union with an empty rectangle, return the other rectangle.
 - Bonus methods for rectangles, such has `.left`, `.top`, `.right`, `.bottom`, `.scale`.
-- `Projection` inverse is less precise than in original Godot. You can always go double to get more precise `.inverse()`
