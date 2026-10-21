@@ -417,6 +417,15 @@ double gm_lerp(double from, double to, double weight) ///
 float gm_lerp_angle(float from, float to, float weight) => from + gm_angle_difference(from, to) * weight; ///
 double gm_lerp_angle(double from, double to, double weight) => from + gm_angle_difference(from, to) * weight; ///
 
+float  gm_log(float x)  => assumePureNothrowNogc(&libc.logf, x); ///
+double gm_log(double x) => assumePureNothrowNogc(&libc.log, x); ///
+
+float  gm_log2(float x)  => assumePureNothrowNogc(&libc.log2f, x); ///
+double gm_log2(double x) => assumePureNothrowNogc(&libc.log2, x); ///
+
+float  gm_log10(float x)  => assumePureNothrowNogc(&libc.log10f, x); ///
+double gm_log10(double x) => assumePureNothrowNogc(&libc.log10, x); ///
+
 version(LDC)
 {
     bool gm_likely(bool b) => llvm_expect!bool(b, true);
@@ -474,8 +483,12 @@ void gm_swap(T)(ref T a, ref T b)
     b = tmp;
 }
 
-float gm_tan(float x)   => libc.tanf(x);
-double gm_tan(double x) => libc.tan(x);
+float gm_tan(float x)   => libc.tanf(x); ///
+double gm_tan(double x) => libc.tan(x); ///
+
+float  gm_trunc(float x)  => libc.truncf(x); ///
+double gm_trunc(double x) => libc.trunc(x); ///
+
 
 
 

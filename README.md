@@ -113,6 +113,9 @@ bool  gm_is_finite(float x);
 bool  gm_is_zero_approx(float value);
 float gm_lerp(float from, float to, float weight);
 float gm_lerp_angle(float from, float to, float weight);
+float gm_log(float x);
+float gm_log10(float x);
+float gm_log2(float x);
 bool  gm_likely(bool b);
 bool  gm_unlikely(bool b);
 float gm_rad_to_deg(float y);
@@ -127,6 +130,7 @@ int   gm_snapped(int value, int step);
 float gm_sqrt(float x);
 void  gm_swap(T)(ref T a, ref T b);
 float gm_tan(float x);
+float gm_trunc(float x);
 ```
 
 
